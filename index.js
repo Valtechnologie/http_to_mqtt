@@ -57,9 +57,18 @@ function logRequest(req, res, next) {
 }
 
 function authorizeUser(req, res, next) {
-    if (settings.auth_key && req.body['key'] != settings.auth_key) {
-        console.log('Request is not authorized.');
-        res.sendStatus(401);
+    if (settings.auth_key) {
+		if (req.body['key'] && req.body['key'] != settings.auth_key) {
+			console.log('Request is not authorized (post).');
+			res.sendStatus(401);
+		}
+		else if (req.query.key && req.query.key != settings.auth_key) { 
+			console.log('Request is not authorized (get).');
+			res.sendStatus(401);
+		}
+		else {		
+			next();
+		}
     }
     else {
         next();
@@ -111,6 +120,13 @@ app.post('/post/', logRequest, authorizeUser, checkSingleFileUpload, checkMessag
     mqttClient.publish(req.body['topic'], req.body['message']);
     res.sendStatus(200);
 });
+
+app.get('/get/', logRequest, authorizeUser, checkSingleFileUpload, checkMessagePathQueryParameter, checkTopicQueryParameter, ensureTopicSpecified, function (req, res) {
+
+    mqttClient.publish(req.query.topic, req.query.message);
+    res.sendStatus(200);
+});
+
 
 app.get('/subscribe/', logRequest, authorizeUser, function (req, res) {
 
