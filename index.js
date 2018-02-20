@@ -1,8 +1,8 @@
 var settings = {
     mqtt: {
-        host: process.env.MQTT_HOST || '',
-        user: process.env.MQTT_USER || '',
-        password: process.env.MQTT_PASS || '',
+        host: process.env.MQTT_HOST || 'http://localhost:1883',
+        user: process.env.MQTT_USER || 'maison',
+        password: process.env.MQTT_PASS || 'SonOffMot',
         clientId: process.env.MQTT_CLIENT_ID || null
     },
     keepalive: {
@@ -10,7 +10,7 @@ var settings = {
         message: process.env.KEEP_ALIVE_MESSAGE || 'keep_alive'
     },
     debug: process.env.DEBUG_MODE || false,
-    auth_key: process.env.AUTH_KEY || '',
+    auth_key: process.env.AUTH_KEY || 'weiury23784wyrue2736tr',
     http_port: process.env.PORT || 5000
 }
 
@@ -122,8 +122,7 @@ app.post('/post/', logRequest, authorizeUser, checkSingleFileUpload, checkMessag
 });
 
 app.get('/get/', logRequest, authorizeUser, checkSingleFileUpload, checkMessagePathQueryParameter, checkTopicQueryParameter, ensureTopicSpecified, function (req, res) {
-
-    mqttClient.publish(req.query.topic, req.query.message);
+    mqttClient.publish(req.query.topic, req.query.message,{qos: 0, retain: true, dup: false}); 
     res.sendStatus(200);
 });
 
@@ -161,5 +160,7 @@ app.get('/subscribe/', logRequest, authorizeUser, function (req, res) {
 });
 
 app.listen(app.get('port'), "0.0.0.0", function () {
+	// "0.0.0.0" will listen to IPv4 interface
+	// "::1" will listen to IPv6 interface
     console.log('Node app is running on port', app.get('port'));
 });
